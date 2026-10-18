@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const LOGO_SRC = "/logo.jpg";
+const LOGO_SRC = "/logo.png";
 
 /* ── Helpers ── */
 function getNextSunday() {
