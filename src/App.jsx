@@ -406,7 +406,7 @@ export default function App() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 40, marginBottom: 48 }}>
             <div>
               <div style={{ marginBottom: 16 }}>
-                <img src={LOGO_SRC} alt="GMCFI" style={{ height: 44, objectFit: "contain" }} />
+                <img src={LOGO_SRC} alt="GMCFI" style={{ height: 44, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
               </div>
               <p style={{ fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,0.35)" }}>
                 Grace Montagnard Alliance<br />Church Finland
