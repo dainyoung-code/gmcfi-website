@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+const LOGO_SRC = "/logo.jpg";
 
 /* ── Helpers ── */
 function getNextSunday() {
@@ -103,9 +104,9 @@ export default function App() {
         transition: "box-shadow .3s", borderBottom: "1px solid #eee"
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68, padding: "0 24px" }}>
-          {/* Logo text */}
+          {/* Logo — CMA style */}
           <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }} onClick={() => scrollTo("hero")}>
-            <span style={{ fontSize: 22, fontWeight: 700, color: "#6B2737", letterSpacing: 3, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase" }}>GMCFI</span>
+            <img src={LOGO_SRC} alt="GMCFI" style={{ height: 50, objectFit: "contain" }} />
           </div>
 
           {/* Desktop links */}
@@ -398,7 +399,7 @@ export default function App() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 40, marginBottom: 48 }}>
             <div>
               <div style={{ marginBottom: 16 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 3, textTransform: "uppercase" }}>GMCFI</span>
+                <img src={LOGO_SRC} alt="GMCFI" style={{ height: 40, objectFit: "contain", filter: "brightness(2)" }} />
               </div>
               <p style={{ fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,0.35)" }}>
                 Grace Montagnard Alliance<br />Church Finland
