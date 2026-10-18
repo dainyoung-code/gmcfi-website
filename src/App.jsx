@@ -145,7 +145,7 @@ export default function App() {
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72, padding: "0 24px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => scrollTo("hero")}>
-            <img src={LOGO_SRC} alt="GMCFI" style={{ width: 44, height: 44, borderRadius: "50%", boxShadow: "0 2px 8px rgba(107,39,55,0.25)" }} />
+            <img src={LOGO_SRC} alt="GMCFI" style={{ width: 44, height: 44, borderRadius: "50%", boxShadow: "0 2px 8px rgba(107,39,55,0.25)", background: "#fff", objectFit: "cover" }} />
             <div>
               <div style={{ fontSize: 16, fontWeight: 700, color: scrolled ? "#6B2737" : "#fff", transition: "color 0.3s", letterSpacing: 0.5 }}>GMCFI</div>
               <div style={{ fontSize: 10, color: scrolled ? "#999" : "rgba(255,255,255,0.7)", transition: "color 0.3s", letterSpacing: 0.5 }}>Raahe, Finland</div>
@@ -237,7 +237,8 @@ export default function App() {
             <div style={{ flex: "0 0 auto", textAlign: "center" }}>
               <img src={LOGO_SRC} alt="GMCFI" style={{
                 width: "clamp(140px, 20vw, 220px)", height: "clamp(140px, 20vw, 220px)",
-                borderRadius: "50%", boxShadow: "0 12px 60px rgba(0,0,0,0.4), 0 0 0 6px rgba(255,255,255,0.1)",
+                borderRadius: "50%", boxShadow: "0 12px 60px rgba(0,0,0,0.4), 0 0 0 6px rgba(255,255,255,0.15)",
+                background: "#fff", objectFit: "cover"
               }} />
             </div>
           </FadeIn>
@@ -451,7 +452,7 @@ export default function App() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 40, marginBottom: 48 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <img src={LOGO_SRC} alt="GMCFI" style={{ width: 40, height: 40, borderRadius: "50%", opacity: 0.8 }} />
+                <img src={LOGO_SRC} alt="GMCFI" style={{ width: 40, height: 40, borderRadius: "50%", opacity: 0.8, background: "#fff", objectFit: "cover" }} />
                 <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: 1, color: "rgba(255,255,255,0.7)" }}>GMCFI</span>
               </div>
               <p style={{ fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,0.4)" }}>
