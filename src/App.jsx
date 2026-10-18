@@ -104,13 +104,12 @@ export default function App() {
         transition: "box-shadow .3s", borderBottom: "1px solid #eee"
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68, padding: "0 24px" }}>
-          {/* Logo */}
-          <div style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => scrollTo("hero")}>
-            <img src={LOGO_SRC} alt="GMCFI" style={{ width: 46, height: 46, borderRadius: "50%", background: "#fff", border: "2px solid #f0e8ea", objectFit: "cover" }} />
-            <div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: "#6B2737", letterSpacing: 0.5 }}>GMCFI</div>
-              <div style={{ fontSize: 10, color: "#999", letterSpacing: 0.5, marginTop: -1 }}>Grace Montagnard Alliance Church</div>
-            </div>
+          {/* Logo — CMA style: large logo + big text */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16, cursor: "pointer" }} onClick={() => scrollTo("hero")}>
+            <img src={LOGO_SRC} alt="GMCFI" style={{ width: 54, height: 54, borderRadius: "50%", background: "#fff", objectFit: "cover" }} />
+            <span style={{ fontSize: 22, fontWeight: 400, color: "#555", letterSpacing: 3, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase" }}>
+              <span style={{ fontWeight: 700, color: "#6B2737" }}>GMCFI</span>
+            </span>
           </div>
 
           {/* Desktop links */}
@@ -413,9 +412,9 @@ export default function App() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 40, marginBottom: 48 }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <img src={LOGO_SRC} alt="GMCFI" style={{ width: 38, height: 38, borderRadius: "50%", background: "#fff", objectFit: "cover" }} />
-                <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 1 }}>GMCFI</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+                <img src={LOGO_SRC} alt="GMCFI" style={{ width: 44, height: 44, borderRadius: "50%", background: "#fff", objectFit: "cover" }} />
+                <span style={{ fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.7)", letterSpacing: 3, textTransform: "uppercase" }}>GMCFI</span>
               </div>
               <p style={{ fontSize: 13, lineHeight: 1.7, color: "rgba(255,255,255,0.35)" }}>
                 Grace Montagnard Alliance<br />Church Finland
