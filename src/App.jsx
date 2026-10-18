@@ -64,9 +64,43 @@ function ArrowLink({ children, onClick, dark }) {
   );
 }
 
+
+/* ── Toiminnot: lisää kuva (image: "/images/x.jpg") ja YouTube-video (video: "https://www.youtube.com/embed/ID") ── */
+const ACTIVITIES = [
+  { day: "Sunnuntai", time: "10:00–12:00", title: "Jumalanpalvelus", desc: "Yhteinen jumalanpalvelus saarnalla, rukouksella ja ylistyksellä.", image: "", video: "", icon: "✝", grad: "linear-gradient(135deg,#6B2737,#9b4a5c)" },
+  { day: "Sunnuntai", time: "10:00–10:45", title: "Pyhäkoulu", desc: "Lasten pyhäkoulu raamatunkertomuksin ja askarteluin.", image: "", video: "", icon: "☀", grad: "linear-gradient(135deg,#c98b5a,#e3b47c)" },
+  { day: "Keskiviikko", time: "18:00–19:30", title: "Raamattupiiri", desc: "Raamatun opiskelua ja rukousta pienryhmässä.", image: "", video: "", icon: "✦", grad: "linear-gradient(135deg,#3a4a6b,#5d7096)" },
+  { day: "Perjantai", time: "18:00–20:00", title: "Nuortenilta", desc: "Musiikkia, pelejä, keskustelua ja hengellistä opetusta.", image: "", video: "", icon: "♪", grad: "linear-gradient(135deg,#4f6b4a,#7c9a6f)" },
+];
+
+/* ── Kuvagalleria: lisää kuvat kansioon public/images/ ja kirjoita polku image-kenttään ── */
+const GALLERY = [
+  { caption: "Jumalanpalvelus", image: "", icon: "✝", grad: "linear-gradient(135deg,#6B2737,#9b4a5c)" },
+  { caption: "Ylistys", image: "", icon: "♪", grad: "linear-gradient(135deg,#8a3b4c,#b5677a)" },
+  { caption: "Pyhäkoulu", image: "", icon: "☀", grad: "linear-gradient(135deg,#c98b5a,#e3b47c)" },
+  { caption: "Raamattupiiri", image: "", icon: "✦", grad: "linear-gradient(135deg,#3a4a6b,#5d7096)" },
+  { caption: "Nuoret", image: "", icon: "★", grad: "linear-gradient(135deg,#4f6b4a,#7c9a6f)" },
+  { caption: "Yhteinen ateria", image: "", icon: "♥", grad: "linear-gradient(135deg,#7a5a3a,#a8835c)" },
+];
+
+function MediaBox({ image, label, grad, icon, height, caption }) {
+  return (
+    <div style={{ position: "relative", height, background: image ? "#ddd" : grad, overflow: "hidden" }}>
+      {image
+        ? <img src={image} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        : <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 54, color: "rgba(255,255,255,0.35)" }}>{icon}</div>}
+      {caption && <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "28px 14px 12px", background: "linear-gradient(transparent, rgba(0,0,0,0.55))", color: "#fff", fontSize: 14, fontWeight: 600 }}>{label}</div>}
+    </div>
+  );
+}
+
+const IcPlay = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>;
+
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [video, setVideo] = useState(null);
+  const [photo, setPhoto] = useState(null);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
@@ -118,7 +152,7 @@ export default function App() {
               }}>{n.l}</button>
             ))}
             <div style={{ width: 1, height: 24, background: "#e5e5e5", margin: "0 8px" }} />
-            {[["Tietoa meistä","about"],["Usko","believe"],["Toiminta","activities"],["Yhteystiedot","contact"]].map(([l, id]) => (
+            {[["Tietoa meistä","about"],["Usko","believe"],["Toiminta","activities"],["Galleria","gallery"],["Yhteystiedot","contact"]].map(([l, id]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{
                 background: "none", border: "none", cursor: "pointer",
                 padding: "8px 14px", fontSize: 13, fontWeight: 500, color: "#666",
@@ -134,7 +168,7 @@ export default function App() {
         </div>
         {menuOpen && (
           <div style={{ background: "#fff", padding: "8px 24px 20px", borderTop: "1px solid #eee" }}>
-            {[["Rukous","pray"],["Palvelu","activities"],["Lahjoitus","contact"],["Tietoa meistä","about"],["Usko","believe"],["Toiminta","activities"],["Yhteystiedot","contact"]].map(([l, id], i) => (
+            {[["Rukous","pray"],["Palvelu","activities"],["Lahjoitus","contact"],["Tietoa meistä","about"],["Usko","believe"],["Toiminta","activities"],["Galleria","gallery"],["Yhteystiedot","contact"]].map(([l, id], i) => (
               <button key={i} onClick={() => scrollTo(id)} style={{
                 display: "block", width: "100%", textAlign: "left", background: "none", border: "none",
                 cursor: "pointer", fontSize: 15, fontWeight: 600, color: "#333", padding: "13px 0",
@@ -325,25 +359,77 @@ export default function App() {
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, color: "#6B2737", marginBottom: 10 }}>KOKOONTUMISAJAT</div>
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 700, color: "#1a1a2e", marginBottom: 40 }}>Säännöllinen toiminta</h2>
           </Fade>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24 }}>
-            {[
-              { day: "Sunnuntai", time: "10:00–12:00", title: "Jumalanpalvelus", desc: "Yhteinen jumalanpalvelus saarnalla, rukouksella ja ylistyksellä." },
-              { day: "Sunnuntai", time: "10:00–10:45", title: "Pyhäkoulu", desc: "Lasten pyhäkoulu raamatunkertomuksin ja askarteluin." },
-              { day: "Keskiviikko", time: "18:00–19:30", title: "Raamattupiiri", desc: "Raamatun opiskelua ja rukousta pienryhmässä." },
-              { day: "Perjantai", time: "18:00–20:00", title: "Nuortenilta", desc: "Musiikkia, pelejä, keskustelua ja hengellistä opetusta." },
-            ].map((s, i) => (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 28 }}>
+            {ACTIVITIES.map((s, i) => (
               <Fade key={i} delay={i * 0.08}>
-                <div style={{ padding: "28px 24px", borderLeft: "3px solid #6B2737", background: "#faf8f5" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#999", textTransform: "uppercase", marginBottom: 6 }}>{s.day}</div>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "#6B2737", marginBottom: 8 }}>{s.time}</div>
-                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#1a1a2e", marginBottom: 8 }}>{s.title}</h4>
-                  <p style={{ fontSize: 14, lineHeight: 1.7, color: "#666" }}>{s.desc}</p>
+                <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 6, overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", transition: "box-shadow .3s, transform .3s" }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
+                >
+                  <MediaBox image={s.image} label={s.title} grad={s.grad} icon={s.icon} height={180} />
+                  <div style={{ padding: "22px 22px 24px", display: "flex", flexDirection: "column", flex: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#999", textTransform: "uppercase", marginBottom: 6 }}>{s.day}</div>
+                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#6B2737", marginBottom: 8 }}>{s.time}</div>
+                    <h4 style={{ fontSize: 17, fontWeight: 700, color: "#1a1a2e", marginBottom: 8 }}>{s.title}</h4>
+                    <p style={{ fontSize: 14, lineHeight: 1.7, color: "#666", marginBottom: 20, flex: 1 }}>{s.desc}</p>
+                    <button onClick={() => setVideo(s)} style={{
+                      alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 8,
+                      background: "#6B2737", color: "#fff", border: "none", borderRadius: 999,
+                      padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+                      fontFamily: "'DM Sans', sans-serif"
+                    }}><IcPlay /> Katso video</button>
+                  </div>
                 </div>
               </Fade>
             ))}
           </div>
         </div>
       </section>
+
+      {/* ═══ GALLERY ═══ */}
+      <section id="gallery" style={{ padding: "80px 24px", background: "#f9f6f2" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <Fade>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2.5, color: "#6B2737", marginBottom: 10 }}>KUVAGALLERIA</div>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 700, color: "#1a1a2e", marginBottom: 40 }}>Kuvia toiminnastamme</h2>
+          </Fade>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+            {GALLERY.map((g, i) => (
+              <Fade key={i} delay={i * 0.05}>
+                <div onClick={() => g.image && setPhoto(g)} style={{ borderRadius: 6, overflow: "hidden", cursor: g.image ? "zoom-in" : "default" }}>
+                  <MediaBox image={g.image} label={g.caption} grad={g.grad} icon={g.icon} height={200} caption />
+                </div>
+              </Fade>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ VIDEO MODAL ═══ */}
+      {video && (
+        <div onClick={() => setVideo(null)} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(10,10,20,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 860, background: "#000", borderRadius: 8, overflow: "hidden", position: "relative" }}>
+            <button onClick={() => setVideo(null)} aria-label="Sulje" style={{ position: "absolute", top: 8, right: 8, zIndex: 2, background: "rgba(255,255,255,0.15)", color: "#fff", border: "none", borderRadius: "50%", width: 40, height: 40, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><IcX /></button>
+            {video.video ? (
+              <div style={{ position: "relative", paddingTop: "56.25%" }}>
+                <iframe src={video.video} title={video.title} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }} />
+              </div>
+            ) : (
+              <div style={{ padding: "72px 32px", textAlign: "center", color: "#fff", background: "linear-gradient(135deg,#6B2737,#3a1520)" }}>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, marginBottom: 10 }}>{video.title}</div>
+                <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)" }}>Video tulossa pian.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ PHOTO MODAL ═══ */}
+      {photo && (
+        <div onClick={() => setPhoto(null)} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(10,10,20,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, cursor: "zoom-out" }}>
+          <img src={photo.image} alt={photo.caption} style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 6 }} />
+        </div>
+      )}
 
       {/* ═══ BIBLE VERSE ═══ */}
       <section style={{ padding: "80px 24px", background: "#6B2737", textAlign: "center" }}>
