@@ -173,7 +173,7 @@ export default function App() {
           </div>
           <Fade delay={0.15} style={{ flex: "0 1 380px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <img src="/symbols.jpg" alt="Risti, kruunu, malja, Raamattu" style={{
+              <img src="/symbols.png" alt="Risti, kruunu, malja, Raamattu" style={{
                 width: "clamp(220px, 30vw, 380px)", objectFit: "contain",
                 filter: "drop-shadow(0 8px 24px rgba(107,39,55,0.1))"
               }} />
