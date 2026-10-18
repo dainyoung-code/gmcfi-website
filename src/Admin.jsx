@@ -207,7 +207,7 @@ export default function Admin() {
       <main style={{ maxWidth: 760, margin: "0 auto", padding: "20px 16px 120px" }}>
         {!storage && (
           <div style={{ background: "#fff4e5", border: "1px solid #f3d29b", borderRadius: 10, padding: 14, marginBottom: 20, fontSize: 14, lineHeight: 1.5 }}>
-            <strong>Tallennustila puuttuu.</strong> Muutoksia ei voi vielä tallentaa. Yhdistä Vercelissä Blob-tallennustila projektiin (Storage → Create → Blob) ja julkaise uudelleen.
+            <strong>Tallennustila puuttuu.</strong> Muutoksia ei voi vielä tallentaa. Avaa vercel.com → gmcfi-website → Storage → Create → Blob (Public) ja yhdistä se tähän projektiin. Julkaise sen jälkeen uudelleen.
           </div>
         )}
 
