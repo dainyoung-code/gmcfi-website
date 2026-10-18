@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from "react";
+import { DEFAULT_CONTENT, mergeContent, toEmbedUrl, WEEKDAYS } from "./content.js";
 
 const LOGO_SRC = "/logo.png";
 
 /* ── Helpers ── */
-function getNextSunday() {
+function getNextService(weekday = 0, time = "10:00") {
   const now = new Date();
-  if (now.getDay() === 0) return now; // today is Sunday
+  const [h, m] = String(time).split(":").map(Number);
   const d = new Date(now);
-  d.setDate(d.getDate() + (7 - d.getDay()));
+  d.setDate(d.getDate() + ((weekday - d.getDay() + 7) % 7));
+  d.setHours(h || 0, m || 0, 0, 0);
+  // Jos tämän päivän tilaisuus on jo päättynyt (2 h), näytä seuraava viikko
+  if (d.getTime() + 2 * 3600 * 1000 < now.getTime()) d.setDate(d.getDate() + 7);
   return d;
 }
 
@@ -41,6 +45,7 @@ const IcHeart = () => <Ic d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a
 const IcBook = () => <Ic d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />;
 const IcUsers = () => <Ic d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />;
 const IcGlobe = () => <Ic d="M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z" />;
+const IcPhone = () => <Ic d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z" />;
 const IcSearch = () => <Ic d="M11 3a8 8 0 100 16 8 8 0 000-16zM21 21l-4.35-4.35" />;
 
 const NAV = [
@@ -65,23 +70,16 @@ function ArrowLink({ children, onClick, dark }) {
 }
 
 
-/* ── Toiminnot: lisää kuva (image: "/images/x.jpg") ja YouTube-video (video: "https://www.youtube.com/embed/ID") ── */
-const ACTIVITIES = [
-  { day: "Sunnuntai", time: "10:00–12:00", title: "Jumalanpalvelus", desc: "Yhteinen jumalanpalvelus saarnalla, rukouksella ja ylistyksellä.", image: "", video: "", icon: "✝", grad: "linear-gradient(135deg,#6B2737,#9b4a5c)" },
-  { day: "Sunnuntai", time: "10:00–10:45", title: "Pyhäkoulu", desc: "Lasten pyhäkoulu raamatunkertomuksin ja askarteluin.", image: "", video: "", icon: "☀", grad: "linear-gradient(135deg,#c98b5a,#e3b47c)" },
-  { day: "Keskiviikko", time: "18:00–19:30", title: "Raamattupiiri", desc: "Raamatun opiskelua ja rukousta pienryhmässä.", image: "", video: "", icon: "✦", grad: "linear-gradient(135deg,#3a4a6b,#5d7096)" },
-  { day: "Perjantai", time: "18:00–20:00", title: "Nuortenilta", desc: "Musiikkia, pelejä, keskustelua ja hengellistä opetusta.", image: "", video: "", icon: "♪", grad: "linear-gradient(135deg,#4f6b4a,#7c9a6f)" },
+const VISUALS = [
+  { icon: "✝", grad: "linear-gradient(135deg,#6B2737,#9b4a5c)" },
+  { icon: "☀", grad: "linear-gradient(135deg,#c98b5a,#e3b47c)" },
+  { icon: "✦", grad: "linear-gradient(135deg,#3a4a6b,#5d7096)" },
+  { icon: "♪", grad: "linear-gradient(135deg,#4f6b4a,#7c9a6f)" },
+  { icon: "★", grad: "linear-gradient(135deg,#8a3b4c,#b5677a)" },
+  { icon: "♥", grad: "linear-gradient(135deg,#7a5a3a,#a8835c)" },
 ];
-
-/* ── Kuvagalleria: lisää kuvat kansioon public/images/ ja kirjoita polku image-kenttään ── */
-const GALLERY = [
-  { caption: "Jumalanpalvelus", image: "", icon: "✝", grad: "linear-gradient(135deg,#6B2737,#9b4a5c)" },
-  { caption: "Ylistys", image: "", icon: "♪", grad: "linear-gradient(135deg,#8a3b4c,#b5677a)" },
-  { caption: "Pyhäkoulu", image: "", icon: "☀", grad: "linear-gradient(135deg,#c98b5a,#e3b47c)" },
-  { caption: "Raamattupiiri", image: "", icon: "✦", grad: "linear-gradient(135deg,#3a4a6b,#5d7096)" },
-  { caption: "Nuoret", image: "", icon: "★", grad: "linear-gradient(135deg,#4f6b4a,#7c9a6f)" },
-  { caption: "Yhteinen ateria", image: "", icon: "♥", grad: "linear-gradient(135deg,#7a5a3a,#a8835c)" },
-];
+const vis = i => VISUALS[i % VISUALS.length];
+const ABOUT_ICONS = [<IcGlobe key="g" />, <IcBook key="b" />, <IcHeart key="h" />];
 
 function MediaBox({ image, label, grad, icon, height, caption }) {
   return (
@@ -101,6 +99,11 @@ export default function App() {
   const [scrolled, setScrolled] = useState(false);
   const [video, setVideo] = useState(null);
   const [photo, setPhoto] = useState(null);
+  const [c, setC] = useState(DEFAULT_CONTENT);
+
+  useEffect(() => {
+    fetch("/api/content").then(r => r.ok ? r.json() : null).then(d => { if (d?.content) setC(mergeContent(d.content)); }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
@@ -110,8 +113,9 @@ export default function App() {
 
   const scrollTo = id => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
 
-  const nextSun = getNextSunday();
+  const nextSun = getNextService(Number(c.service.weekday) || 0, c.service.time);
   const nextSunStr = nextSun.toLocaleDateString("fi-FI", { weekday: "long", day: "numeric", month: "long" });
+  const serviceDay = WEEKDAYS[Number(c.service.weekday) || 0];
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", color: "#222", background: "#fff" }}>
@@ -125,7 +129,7 @@ export default function App() {
 
       {/* ═══ TOPBAR ═══ */}
       <div style={{ background: "#6B2737", padding: "8px 24px", fontSize: 12, color: "rgba(255,255,255,0.85)", textAlign: "center", letterSpacing: 0.3 }}>
-        Seuraava jumalanpalvelus: <strong style={{ textTransform: "capitalize" }}>{nextSunStr} klo 10:00</strong> · Kulmakatu 8, Raahe
+        Seuraava jumalanpalvelus: <strong>{nextSunStr.charAt(0).toUpperCase() + nextSunStr.slice(1)} klo {c.service.time}</strong> · {c.service.address}
       </div>
 
       {/* ═══ NAV ═══ */}
@@ -192,13 +196,12 @@ export default function App() {
                 fontFamily: "'Playfair Display', serif", fontSize: "clamp(38px, 6vw, 64px)",
                 fontWeight: 800, color: "#1a1a2e", lineHeight: 1.08, marginBottom: 24, letterSpacing: -1
               }}>
-                Koko Jeesus<br />koko maailmalle
+                {c.hero.title.split("\n").map((l, i) => <span key={i}>{i > 0 && <br />}{l}</span>)}
               </h1>
             </Fade>
             <Fade delay={0.1}>
               <p style={{ fontSize: 18, lineHeight: 1.8, color: "#555", maxWidth: 460, marginBottom: 36 }}>
-                Grace Montagnard Alliance Church Finland yhdistää ihmisiä uskossa, 
-                toivossa ja rakkaudessa Raahessa. Tervetuloa kotiseurakuntaamme.
+                {c.hero.text}
               </p>
             </Fade>
             <Fade delay={0.2}>
@@ -219,11 +222,7 @@ export default function App() {
       {/* ═══ THREE CARDS: Who / Believe / Do ═══ */}
       <section id="about" style={{ padding: "80px 24px", background: "#fff" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32 }}>
-          {[
-            { icon: <IcGlobe />, label: "KEITÄ OLEMME", title: "Tietoa meistä", text: "Olemme monikulttuurinen kristillinen seurakunta Raahessa. Yhdistämme eri taustoista tulevat ihmiset yhteiseen uskoon ja yhteyteen.", id: "believe" },
-            { icon: <IcBook />, label: "MIHIN USKOMME", title: "Uskomme perusteet", text: "Uskomme Raamattuun Jumalan sanana, Jeesuksen Kristuksen pelastavaan armoon ja Pyhän Hengen voimaan jokapäiväisessä elämässä.", id: "believe" },
-            { icon: <IcHeart />, label: "MITÄ TEEMME", title: "Toimintamme", text: "Järjestämme jumalanpalveluksia, raamattupiirejä, nuorteniltoja ja yhteisötapahtumia. Palvelemme lähimmäisiämme rakkaudella.", id: "activities" },
-          ].map((c, i) => (
+          {c.about.map((card, i) => ({ ...card, icon: ABOUT_ICONS[i % 3], id: i === 2 ? "activities" : "believe" })).map((c, i) => (
             <Fade key={i} delay={i * 0.1}>
               <div style={{
                 padding: "40px 32px", borderRadius: 4,
@@ -258,7 +257,7 @@ export default function App() {
               background: "#fff", borderRadius: 4, overflow: "hidden",
               border: "1px solid #eee"
             }}>
-              <div style={{
+              {c.news.image ? <img src={c.news.image} alt={c.news.title} style={{ width: "100%", height: "100%", minHeight: 280, objectFit: "cover", display: "block" }} /> : <div style={{
                 minHeight: 280,
                 background: "linear-gradient(135deg, #6B2737 0%, #8B4555 100%)",
                 display: "flex", alignItems: "center", justifyContent: "center",
@@ -268,15 +267,14 @@ export default function App() {
                   <div style={{ fontSize: 48, fontWeight: 800, color: "rgba(255,255,255,0.9)", fontFamily: "'Playfair Display', serif", letterSpacing: 2 }}>GMCFI</div>
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", letterSpacing: 3, marginTop: 8 }}>SEURAKUNTA</div>
                 </div>
-              </div>
+              </div>}
               <div style={{ padding: "40px 36px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#6B2737", marginBottom: 12 }}>JUMALANPALVELUS</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#6B2737", marginBottom: 12 }}>{c.news.label}</div>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "#1a1a2e", marginBottom: 14, lineHeight: 1.2 }}>
-                  Sunnuntain jumalanpalvelus
+                  {c.news.title}
                 </h3>
                 <p style={{ fontSize: 15, lineHeight: 1.8, color: "#666", marginBottom: 24 }}>
-                  Kokoonnumme joka sunnuntai klo 10:00 yhteiseen jumalanpalvelukseen osoitteessa Kulmakatu 8, Raahe. 
-                  Saarna, rukous, ylistys ja ehtoollinen. Kaikki ovat tervetulleita!
+                  {c.news.text}
                 </p>
                 <ArrowLink onClick={() => scrollTo("activities")}>Lisätietoja</ArrowLink>
               </div>
@@ -297,11 +295,7 @@ export default function App() {
             </div>
           </Fade>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 32 }}>
-            {[
-              { cat: "OPETUS", title: "Jumala on rakkaus", text: "Uskomme yhteen Jumalaan — Isä, Poika ja Pyhä Henki. Hän on rakastanut meitä jo ennen maailman luomista." },
-              { cat: "PELASTUS", title: "Armo riittää", text: "Pelastus on Jumalan lahja, joka vastaanotetaan uskon kautta Jeesukseen Kristukseen. Ei kenenkään teoista, ettei kukaan kerskaisi." },
-              { cat: "SEURAKUNTA", title: "Yhdessä vahvempia", text: "Seurakunta on Kristuksen ruumis maan päällä. Yhdessä kasvamme uskossa, palvelemme toisiamme ja viemme evankeliumia eteenpäin." },
-            ].map((s, i) => (
+            {c.beliefs.map((s, i) => (
               <Fade key={i} delay={i * 0.1}>
                 <div style={{
                   border: "1px solid #eee", borderRadius: 4, overflow: "hidden",
@@ -360,24 +354,24 @@ export default function App() {
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 700, color: "#1a1a2e", marginBottom: 40 }}>Säännöllinen toiminta</h2>
           </Fade>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 28 }}>
-            {ACTIVITIES.map((s, i) => (
+            {c.activities.map((s, i) => (
               <Fade key={i} delay={i * 0.08}>
                 <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 6, overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", transition: "box-shadow .3s, transform .3s" }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
                 >
-                  <MediaBox image={s.image} label={s.title} grad={s.grad} icon={s.icon} height={180} />
+                  <MediaBox image={s.image} label={s.title} grad={vis(i).grad} icon={vis(i).icon} height={180} />
                   <div style={{ padding: "22px 22px 24px", display: "flex", flexDirection: "column", flex: 1 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "#999", textTransform: "uppercase", marginBottom: 6 }}>{s.day}</div>
                     <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#6B2737", marginBottom: 8 }}>{s.time}</div>
                     <h4 style={{ fontSize: 17, fontWeight: 700, color: "#1a1a2e", marginBottom: 8 }}>{s.title}</h4>
                     <p style={{ fontSize: 14, lineHeight: 1.7, color: "#666", marginBottom: 20, flex: 1 }}>{s.desc}</p>
-                    <button onClick={() => setVideo(s)} style={{
+                    {toEmbedUrl(s.video) && <button onClick={() => setVideo(s)} style={{
                       alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 8,
                       background: "#6B2737", color: "#fff", border: "none", borderRadius: 999,
                       padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
                       fontFamily: "'DM Sans', sans-serif"
-                    }}><IcPlay /> Katso video</button>
+                    }}><IcPlay /> Katso video</button>}
                   </div>
                 </div>
               </Fade>
@@ -394,10 +388,10 @@ export default function App() {
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 700, color: "#1a1a2e", marginBottom: 40 }}>Kuvia toiminnastamme</h2>
           </Fade>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
-            {GALLERY.map((g, i) => (
+            {c.gallery.map((g, i) => (
               <Fade key={i} delay={i * 0.05}>
                 <div onClick={() => g.image && setPhoto(g)} style={{ borderRadius: 6, overflow: "hidden", cursor: g.image ? "zoom-in" : "default" }}>
-                  <MediaBox image={g.image} label={g.caption} grad={g.grad} icon={g.icon} height={200} caption />
+                  <MediaBox image={g.image} label={g.caption} grad={vis(i).grad} icon={vis(i).icon} height={200} caption />
                 </div>
               </Fade>
             ))}
@@ -410,9 +404,9 @@ export default function App() {
         <div onClick={() => setVideo(null)} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(10,10,20,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 860, background: "#000", borderRadius: 8, overflow: "hidden", position: "relative" }}>
             <button onClick={() => setVideo(null)} aria-label="Sulje" style={{ position: "absolute", top: 8, right: 8, zIndex: 2, background: "rgba(255,255,255,0.15)", color: "#fff", border: "none", borderRadius: "50%", width: 40, height: 40, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><IcX /></button>
-            {video.video ? (
+            {toEmbedUrl(video.video) ? (
               <div style={{ position: "relative", paddingTop: "56.25%" }}>
-                <iframe src={video.video} title={video.title} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }} />
+                <iframe src={toEmbedUrl(video.video) + "?autoplay=1"} title={video.title} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }} />
               </div>
             ) : (
               <div style={{ padding: "72px 32px", textAlign: "center", color: "#fff", background: "linear-gradient(135deg,#6B2737,#3a1520)" }}>
@@ -440,10 +434,9 @@ export default function App() {
               fontFamily: "'Playfair Display', serif", fontSize: "clamp(18px, 3vw, 26px)",
               lineHeight: 1.8, color: "rgba(255,255,255,0.9)", fontStyle: "italic", marginTop: -12, marginBottom: 24
             }}>
-              Sillä niin on Jumala maailmaa rakastanut, että hän antoi ainokaisen Poikansa, 
-              ettei yksikään, joka häneen uskoo, hukkuisi, vaan hänellä olisi iankaikkinen elämä.
+              {c.verse.text}
             </p>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: 2, textTransform: "uppercase" }}>Johannes 3:16</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: 2, textTransform: "uppercase" }}>{c.verse.ref}</div>
           </div>
         </Fade>
       </section>
@@ -459,10 +452,11 @@ export default function App() {
             <Fade delay={0.05}>
               <div>
                 {[
-                  { icon: <IcMap />, label: "OSOITE", val: "Kulmakatu 8, 92100 Raahe" },
-                  { icon: <IcMail />, label: "SÄHKÖPOSTI", val: "gmcfi.raahe@gmail.com", href: "mailto:gmcfi.raahe@gmail.com" },
-                  { icon: <IcClock />, label: "JUMALANPALVELUS", val: "Sunnuntaisin klo 10:00" },
-                ].map((c, i) => (
+                  { icon: <IcMap />, label: "OSOITE", val: c.service.address },
+                  { icon: <IcMail />, label: "SÄHKÖPOSTI", val: c.contact.email, href: `mailto:${c.contact.email}` },
+                  c.contact.phone && { icon: <IcPhone />, label: "PUHELIN", val: c.contact.phone, href: `tel:${c.contact.phone.replace(/\s/g, "")}` },
+                  { icon: <IcClock />, label: "JUMALANPALVELUS", val: `${serviceDay.charAt(0).toUpperCase() + serviceDay.slice(1)}${serviceDay.endsWith("i") ? "sin" : "isin"} klo ${c.service.time}` },
+                ].filter(Boolean).map((c, i) => (
                   <div key={i} style={{ display: "flex", gap: 18, alignItems: "flex-start", marginBottom: 32 }}>
                     <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#faf5f0", color: "#6B2737", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{c.icon}</div>
                     <div>
@@ -478,7 +472,7 @@ export default function App() {
             </Fade>
             <Fade delay={0.15}>
               <div style={{ borderRadius: 4, overflow: "hidden", border: "1px solid #eee", minHeight: 320 }}>
-                <iframe title="Sijainti" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1678.5!2d24.4711!3d64.6841!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNjTCsDQxJzAyLjgiTiAyNMKwMjgnMTYuMCJF!5e0!3m2!1sfi!2sfi!4v1"
+                <iframe title="Sijainti" src={`https://maps.google.com/maps?q=${encodeURIComponent(c.service.address)}&z=15&output=embed`}
                   width="100%" height="100%" style={{ border: 0, minHeight: 320 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
               </div>
             </Fade>
@@ -512,13 +506,13 @@ export default function App() {
             <div>
               <h4 style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>YHTEYSTIEDOT</h4>
               <p style={{ fontSize: 13, lineHeight: 2, color: "rgba(255,255,255,0.35)" }}>
-                Kulmakatu 8<br />92100 Raahe, Finland<br />gmcfi.raahe@gmail.com
+                {c.service.address}<br />{c.contact.email}{c.contact.phone && <><br />{c.contact.phone}</>}
               </p>
             </div>
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12, fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
             <div>© {new Date().getFullYear()} Grace Montagnard Alliance Church Finland</div>
-            <div>Kaikki oikeudet pidätetään</div>
+            <a href="/admin" style={{ color: "rgba(255,255,255,0.25)", textDecoration: "none" }}>Ylläpito</a>
           </div>
         </div>
       </footer>
