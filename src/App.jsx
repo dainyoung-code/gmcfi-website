@@ -4,11 +4,10 @@ const LOGO_SRC = "/logo.png";
 
 /* ── Helpers ── */
 function getNextSunday() {
-  const d = new Date();
-  d.setDate(d.getDate() + ((7 - d.getDay()) % 7 || 7));
-  if (d.getDay() !== 0) d.setDate(d.getDate() + (7 - d.getDay()));
   const now = new Date();
-  if (now.getDay() === 0) return now;
+  if (now.getDay() === 0) return now; // today is Sunday
+  const d = new Date(now);
+  d.setDate(d.getDate() + (7 - d.getDay()));
   return d;
 }
 
@@ -92,7 +91,7 @@ export default function App() {
 
       {/* ═══ TOPBAR ═══ */}
       <div style={{ background: "#6B2737", padding: "8px 24px", fontSize: 12, color: "rgba(255,255,255,0.85)", textAlign: "center", letterSpacing: 0.3 }}>
-        Seuraava jumalanpalvelus: <strong style={{ textTransform: "capitalize" }}>{nextSunStr} klo 11:00</strong> · Kulmakatu 8, Raahe
+        Seuraava jumalanpalvelus: <strong style={{ textTransform: "capitalize" }}>{nextSunStr} klo 10:00</strong> · Kulmakatu 8, Raahe
       </div>
 
       {/* ═══ NAV ═══ */}
@@ -242,7 +241,7 @@ export default function App() {
                   Sunnuntain jumalanpalvelus
                 </h3>
                 <p style={{ fontSize: 15, lineHeight: 1.8, color: "#666", marginBottom: 24 }}>
-                  Kokoonnumme joka sunnuntai klo 11:00 yhteiseen jumalanpalvelukseen osoitteessa Kulmakatu 8, Raahe. 
+                  Kokoonnumme joka sunnuntai klo 10:00 yhteiseen jumalanpalvelukseen osoitteessa Kulmakatu 8, Raahe. 
                   Saarna, rukous, ylistys ja ehtoollinen. Kaikki ovat tervetulleita!
                 </p>
                 <ArrowLink onClick={() => scrollTo("activities")}>Lisätietoja</ArrowLink>
@@ -328,7 +327,7 @@ export default function App() {
           </Fade>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24 }}>
             {[
-              { day: "Sunnuntai", time: "11:00–13:00", title: "Jumalanpalvelus", desc: "Yhteinen jumalanpalvelus saarnalla, rukouksella ja ylistyksellä." },
+              { day: "Sunnuntai", time: "10:00–12:00", title: "Jumalanpalvelus", desc: "Yhteinen jumalanpalvelus saarnalla, rukouksella ja ylistyksellä." },
               { day: "Sunnuntai", time: "10:00–10:45", title: "Pyhäkoulu", desc: "Lasten pyhäkoulu raamatunkertomuksin ja askarteluin." },
               { day: "Keskiviikko", time: "18:00–19:30", title: "Raamattupiiri", desc: "Raamatun opiskelua ja rukousta pienryhmässä." },
               { day: "Perjantai", time: "18:00–20:00", title: "Nuortenilta", desc: "Musiikkia, pelejä, keskustelua ja hengellistä opetusta." },
@@ -376,7 +375,7 @@ export default function App() {
                 {[
                   { icon: <IcMap />, label: "OSOITE", val: "Kulmakatu 8, 92100 Raahe" },
                   { icon: <IcMail />, label: "SÄHKÖPOSTI", val: "gmcfi.raahe@gmail.com", href: "mailto:gmcfi.raahe@gmail.com" },
-                  { icon: <IcClock />, label: "JUMALANPALVELUS", val: "Sunnuntaisin klo 11:00" },
+                  { icon: <IcClock />, label: "JUMALANPALVELUS", val: "Sunnuntaisin klo 10:00" },
                 ].map((c, i) => (
                   <div key={i} style={{ display: "flex", gap: 18, alignItems: "flex-start", marginBottom: 32 }}>
                     <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#faf5f0", color: "#6B2737", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{c.icon}</div>
