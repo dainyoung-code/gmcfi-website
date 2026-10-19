@@ -143,6 +143,8 @@ export const DEFAULT_CONTENT = {
     { caption: { fi: "Nuoret", en: "Youth", vi: "Thanh niên" }, image: "" },
     { caption: { fi: "Yhteinen ateria", en: "Shared meal", vi: "Bữa ăn thông công" }, image: "" },
   ],
+  // Saarnat ja äänitteet: { title, speaker, date, desc, url }
+  audio: [],
   verse: {
     text: {
       fi: "Sillä niin on Jumala maailmaa rakastanut, että hän antoi ainokaisen Poikansa, ettei yksikään, joka häneen uskoo, hukkuisi, vaan hänellä olisi iankaikkinen elämä.",
@@ -161,7 +163,7 @@ export const DEFAULT_CONTENT = {
 export const UI = {
   fi: {
     nextService: "Seuraava jumalanpalvelus", at: "klo",
-    nav: { pray: "Rukous", serve: "Palvelu", give: "Lahjoitus", about: "Tietoa meistä", believe: "Usko", activities: "Toiminta", gallery: "Galleria", contact: "Yhteystiedot" },
+    nav: { pray: "Rukous", serve: "Palvelu", give: "Lahjoitus", about: "Tietoa meistä", believe: "Usko", activities: "Toiminta", gallery: "Galleria", audio: "Saarnat", contact: "Yhteystiedot" },
     discover: "Tutustu seurakuntaan", readMore: "Lue lisää", moreInfo: "Lisätietoja",
     newsLabel: "AJANKOHTAISTA", newsTitle: "Mitä tapahtuu", church: "SEURAKUNTA",
     beliefsLabel: "USKO JA ELÄMÄ", beliefsTitle: "Uskon perusteet",
@@ -172,6 +174,7 @@ export const UI = {
     ],
     actLabel: "KOKOONTUMISAJAT", actTitle: "Säännöllinen toiminta", watch: "Katso video", videoSoon: "Video tulossa pian.",
     galLabel: "KUVAGALLERIA", galTitle: "Kuvia toiminnastamme",
+    audioLabel: "AUDIO", audioTitle: "Saarnat ja äänitteet", download: "Lataa", listen: "Kuuntele",
     contactLabel: "YHTEYSTIEDOT", contactTitle: "Ota yhteyttä",
     address: "OSOITE", email: "SÄHKÖPOSTI", phone: "PUHELIN", service: "JUMALANPALVELUS",
     weekly: (day, time) => `${cap(day)}${day.endsWith("i") ? "sin" : "isin"} klo ${time}`,
@@ -180,7 +183,7 @@ export const UI = {
   },
   en: {
     nextService: "Next service", at: "at",
-    nav: { pray: "Pray", serve: "Serve", give: "Give", about: "About us", believe: "Beliefs", activities: "Ministries", gallery: "Gallery", contact: "Contact" },
+    nav: { pray: "Pray", serve: "Serve", give: "Give", about: "About us", believe: "Beliefs", activities: "Ministries", gallery: "Gallery", audio: "Sermons", contact: "Contact" },
     discover: "Discover who we are", readMore: "Keep reading", moreInfo: "Learn more",
     newsLabel: "WHAT'S HAPPENING", newsTitle: "What's happening", church: "CHURCH",
     beliefsLabel: "FAITH AND LIFE", beliefsTitle: "What we believe",
@@ -191,6 +194,7 @@ export const UI = {
     ],
     actLabel: "MEETING TIMES", actTitle: "Weekly ministries", watch: "Watch video", videoSoon: "Video coming soon.",
     galLabel: "PHOTO GALLERY", galTitle: "Photos from our church",
+    audioLabel: "AUDIO", audioTitle: "Sermons and recordings", download: "Download", listen: "Listen",
     contactLabel: "CONTACT", contactTitle: "Get in touch",
     address: "ADDRESS", email: "EMAIL", phone: "PHONE", service: "WORSHIP SERVICE",
     weekly: (day, time) => `${cap(day)}s at ${time}`,
@@ -199,7 +203,7 @@ export const UI = {
   },
   vi: {
     nextService: "Buổi thờ phượng tới", at: "lúc",
-    nav: { pray: "Cầu nguyện", serve: "Phục vụ", give: "Dâng hiến", about: "Về chúng tôi", believe: "Niềm tin", activities: "Hoạt động", gallery: "Hình ảnh", contact: "Liên hệ" },
+    nav: { pray: "Cầu nguyện", serve: "Phục vụ", give: "Dâng hiến", about: "Về chúng tôi", believe: "Niềm tin", activities: "Hoạt động", gallery: "Hình ảnh", audio: "Bài giảng", contact: "Liên hệ" },
     discover: "Tìm hiểu về Hội Thánh", readMore: "Đọc thêm", moreInfo: "Xem thêm",
     newsLabel: "TIN TỨC", newsTitle: "Sự kiện sắp tới", church: "HỘI THÁNH",
     beliefsLabel: "ĐỨC TIN VÀ ĐỜI SỐNG", beliefsTitle: "Nền tảng đức tin",
@@ -210,6 +214,7 @@ export const UI = {
     ],
     actLabel: "GIỜ NHÓM HỌP", actTitle: "Sinh hoạt hằng tuần", watch: "Xem video", videoSoon: "Video sẽ có sớm.",
     galLabel: "HÌNH ẢNH", galTitle: "Hình ảnh sinh hoạt",
+    audioLabel: "ÂM THANH", audioTitle: "Bài giảng và thu âm", download: "Tải về", listen: "Nghe",
     contactLabel: "LIÊN HỆ", contactTitle: "Liên hệ với chúng tôi",
     address: "ĐỊA CHỈ", email: "EMAIL", phone: "ĐIỆN THOẠI", service: "THỜ PHƯỢNG",
     weekly: (day, time) => `Mỗi ${day} lúc ${time}`,

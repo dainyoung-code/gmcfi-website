@@ -90,6 +90,39 @@ function ImageField({ label, value, onChange, upload }) {
   );
 }
 
+function AudioField({ value, onChange, uploadAudio }) {
+  const [pct, setPct] = useState(null);
+  const [err, setErr] = useState("");
+  const [showLink, setShowLink] = useState(false);
+  const pick = async e => {
+    const f = e.target.files?.[0]; e.target.value = "";
+    if (!f) return;
+    if (!/^audio\//.test(f.type) && !/\.(mp3|m4a|aac|wav|ogg|oga|webm|flac)$/i.test(f.name)) { setErr("Valitse äänitiedosto (mp3, m4a, wav…)."); return; }
+    if (f.size > 300 * 1024 * 1024) { setErr("Tiedosto on yli 300 Mt."); return; }
+    setErr(""); setPct(0);
+    try { onChange(await uploadAudio(f, setPct)); } catch (x) { setErr(x.message || "Lataus epäonnistui"); } finally { setPct(null); }
+  };
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 6 }}>Äänitiedosto</div>
+      {value && <audio controls preload="none" src={value} style={{ width: "100%", marginBottom: 8 }} />}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <label style={{ display: "inline-block" }}>
+          <input type="file" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac" onChange={pick} disabled={pct !== null} style={{ display: "none" }} />
+          <span style={{ display: "inline-block", border: `1px solid ${C.line}`, borderRadius: 8, padding: "9px 14px", fontSize: 14, fontWeight: 600, cursor: pct !== null ? "default" : "pointer", background: "#fff" }}>
+            {pct !== null ? `Ladataan… ${pct} %` : value ? "Vaihda tiedosto" : "Lataa äänitiedosto"}
+          </span>
+        </label>
+        {pct === null && <Btn small onClick={() => setShowLink(v => !v)}>{showLink ? "Piilota linkki" : "Liitä linkki"}</Btn>}
+        {value && pct === null && <Btn small kind="danger" onClick={() => onChange("")}>Poista</Btn>}
+      </div>
+      {pct !== null && <div style={{ height: 6, background: C.bg, borderRadius: 3, marginTop: 8, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: C.brand, transition: "width .2s" }} /></div>}
+      {showLink && <div style={{ marginTop: 10 }}><Field label="Linkki äänitiedostoon (mp3)" value={value} onChange={onChange} placeholder="https://…/saarna.mp3" /></div>}
+      {err && <div style={{ color: C.err, fontSize: 13, marginTop: 6 }}>{err}</div>}
+    </div>
+  );
+}
+
 function ListEditor({ items, onChange, render, blank, addLabel, titleOf }) {
   const set = (i, v) => onChange(items.map((x, j) => j === i ? v : x));
   const move = (i, d) => { const a = [...items]; const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; onChange(a); };
@@ -186,6 +219,23 @@ export default function Admin() {
   const upd = (k, v) => setC(p => ({ ...p, [k]: v }));
   const updObj = (k, field, v) => setC(p => ({ ...p, [k]: { ...p[k], [field]: v } }));
 
+  const uploadAudio = async (file, onPct) => {
+    const { uploadPresigned } = await import("@vercel/blob/client");
+    const ext = (file.name.match(/\.(\w{2,5})$/) || [, "mp3"])[1].toLowerCase();
+    const base = file.name.replace(/\.[^.]+$/, "").normalize("NFKD").replace(/[^\w-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "aanite";
+    const type = file.type || ({ mp3: "audio/mpeg", m4a: "audio/mp4", wav: "audio/wav", aac: "audio/aac", ogg: "audio/ogg", flac: "audio/flac" }[ext] || "audio/mpeg");
+    try {
+      const blob = await uploadPresigned(`audio/${base}.${ext}`, file, {
+        access: "public", handleUploadUrl: "/api/upload-audio", headers: { "x-admin-password": pw },
+        contentType: type, multipart: file.size > 20 * 1024 * 1024,
+        onUploadProgress: e => onPct(Math.round(e.percentage)),
+      });
+      return blob.url;
+    } catch (x) {
+      throw new Error("Äänitteen lataus epäonnistui: " + (x?.message || x));
+    }
+  };
+
   const upload = async file => {
     const data = await resizeImage(file);
     const r = await fetch("/api/upload", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-password": pw }, body: JSON.stringify({ data }) });
@@ -273,6 +323,21 @@ export default function Admin() {
               <ImageField label="Kuva" value={it.image} onChange={v => set({ ...it, image: v })} upload={upload} />
               <Field label="Video (YouTube-linkki)" value={it.video} onChange={v => set({ ...it, video: v })} placeholder="https://www.youtube.com/watch?v=…"
                 hint={it.video ? (toEmbedUrl(it.video) ? "✓ Video löytyi — Katso video -painike näkyy." : "⚠ Linkkiä ei tunnistettu. Käytä YouTube- tai Vimeo-linkkiä.") : "Ilman videota painiketta ei näytetä."} />
+            </>} />
+        </Section>
+
+        <Section title="Saarnat ja äänitteet" desc="Lataa äänitiedosto (mp3, m4a, wav – enintään 300 Mt) tai liitä linkki. Sivulla uusin näytetään ensimmäisenä päivämäärän mukaan.">
+          <ListEditor items={c.audio || []} onChange={v => upd("audio", v)} addLabel="Lisää äänite" titleOf={x => tr(x.title, ed)}
+            blank={{ title: "", speaker: "", date: new Date().toISOString().slice(0, 10), desc: "", url: "" }}
+            render={(it, set) => <>
+              <TField lang={ed} label="Otsikko" value={it.title} onChange={v => set({ ...it, title: v })} placeholder="Esim. Sunnuntain saarna" />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <Field label="Puhuja" value={it.speaker} onChange={v => set({ ...it, speaker: v })} />
+                <Field label="Päivämäärä" type="date" value={it.date} onChange={v => set({ ...it, date: v })} />
+              </div>
+              <TField lang={ed} label="Kuvaus" multiline value={it.desc} onChange={v => set({ ...it, desc: v })} placeholder="Esim. Raamatunkohta: Johannes 3" />
+              <AudioField value={it.url} onChange={v => set({ ...it, url: v })} uploadAudio={uploadAudio} />
+              {!it.url && <div style={{ fontSize: 12, color: "#a86a00" }}>Äänite näkyy sivulla vasta, kun tiedosto on lisätty.</div>}
             </>} />
         </Section>
 

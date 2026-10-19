@@ -84,6 +84,29 @@ function MediaBox({ image, label, grad, icon, height, caption }) {
   );
 }
 
+/* ── Audio card ── */
+function AudioCard({ item, T, t, locale }) {
+  const ref = useRef(null);
+  const date = item.date ? new Date(item.date + "T12:00:00") : null;
+  const dateStr = date && !isNaN(date) ? date.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }) : "";
+  const meta = [item.speaker, dateStr].filter(Boolean).join(" · ");
+  // Vain yksi äänite soi kerrallaan
+  const onPlay = () => document.querySelectorAll("audio").forEach(el => { if (el !== ref.current) el.pause(); });
+  return (
+    <div style={{ border: "1px solid #eee", borderLeft: "4px solid #6B2737", borderRadius: 6, padding: "20px 22px", background: "#fdfbf9" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 6 }}>
+        <div style={{ minWidth: 0, flex: "1 1 240px" }}>
+          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.3 }}>{T(item.title)}</h3>
+          {meta && <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>{meta}</div>}
+        </div>
+        <a href={item.url} download target="_blank" rel="noreferrer" style={{ fontSize: 13, fontWeight: 600, color: "#6B2737", textDecoration: "none", whiteSpace: "nowrap", paddingTop: 4 }}>↓ {t.download}</a>
+      </div>
+      {T(item.desc) && <p style={{ fontSize: 14, lineHeight: 1.7, color: "#666", margin: "8px 0 4px" }}>{T(item.desc)}</p>}
+      <audio ref={ref} controls preload="none" src={item.url} onPlay={onPlay} style={{ width: "100%", marginTop: 12 }} aria-label={`${t.listen}: ${T(item.title)}`} />
+    </div>
+  );
+}
+
 /* ── Language switcher ── */
 function LangSwitch({ lang, setLang, label }) {
   return (
@@ -147,7 +170,8 @@ export default function App() {
   const nextSunStr = nextStr.charAt(0).toUpperCase() + nextStr.slice(1);
 
   const mainLinks = [[t.nav.pray, "pray"], [t.nav.serve, "activities"], [t.nav.give, "contact"]];
-  const subLinks = [[t.nav.about, "about"], [t.nav.believe, "believe"], [t.nav.activities, "activities"], [t.nav.gallery, "gallery"], [t.nav.contact, "contact"]];
+  const audioItems = (c.audio || []).filter(a => a && a.url).map((a, i) => ({ a, i })).sort((x, y) => (y.a.date || "").localeCompare(x.a.date || "") || x.i - y.i).map(x => x.a);
+  const subLinks = [[t.nav.about, "about"], [t.nav.believe, "believe"], [t.nav.activities, "activities"], ...(audioItems.length ? [[t.nav.audio, "audio"]] : []), [t.nav.gallery, "gallery"], [t.nav.contact, "contact"]];
   const bodyFont = lang === "vi" ? "'Be Vietnam Pro', sans-serif" : "'DM Sans', sans-serif";
 
   return (
@@ -377,6 +401,25 @@ export default function App() {
           </div>
         </div>
       </section>
+
+      {/* ═══ AUDIO ═══ */}
+      {audioItems.length > 0 && (
+        <section id="audio" style={{ padding: "80px 24px", background: "#fff" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            <Fade>
+              <div style={KICKER}>{t.audioLabel}</div>
+              <h2 style={H2}>{t.audioTitle}</h2>
+            </Fade>
+            <div style={{ display: "grid", gap: 16 }}>
+              {audioItems.map((a, i) => (
+                <Fade key={a.url + i} delay={Math.min(i, 5) * 0.06}>
+                  <AudioCard item={a} T={T} t={t} locale={locale} />
+                </Fade>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══ GALLERY ═══ */}
       <section id="gallery" style={{ padding: "80px 24px", background: "#f9f6f2" }}>
