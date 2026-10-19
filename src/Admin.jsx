@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DEFAULT_CONTENT, mergeContent, toEmbedUrl, WEEKDAYS } from "./content.js";
+import { DEFAULT_CONTENT, mergeContent, toEmbedUrl, WEEKDAYS, LANGS, tr, setTr } from "./content.js";
 
 const C = { brand: "#6B2737", ink: "#1a1a2e", muted: "#6b6b75", line: "#e7e2dc", bg: "#f6f3ef", ok: "#2f7a4a", err: "#b3261e" };
 const font = "'DM Sans', system-ui, sans-serif";
@@ -34,6 +34,20 @@ function Field({ label, value, onChange, multiline, placeholder, hint, type = "t
         : <input type={type} value={value ?? ""} placeholder={placeholder} onChange={e => onChange(e.target.value)} style={inputStyle} />}
       {hint && <div style={{ fontSize: 12, color: C.muted, marginTop: 5 }}>{hint}</div>}
     </label>
+  );
+}
+
+// Monikielinen tekstikenttä: näyttää valitun kielen tekstin, suomi vihjeenä.
+function TField({ lang, value, onChange, label, placeholder, ...rest }) {
+  const raw = value && typeof value === "object" ? (value[lang] ?? "") : (lang === "fi" ? (value ?? "") : "");
+  const fi = tr(value, "fi");
+  const missing = lang !== "fi" && !raw.trim() && fi;
+  return (
+    <Field {...rest}
+      label={<>{label} <span style={{ fontSize: 10, background: lang === "fi" ? C.bg : "#e8eef9", color: lang === "fi" ? C.muted : "#2b4c8c", borderRadius: 4, padding: "1px 5px", marginLeft: 4 }}>{lang.toUpperCase()}</span>{missing && <span style={{ color: "#a86a00", fontWeight: 600, marginLeft: 6 }}>· ei käännöstä, näytetään suomeksi</span>}</>}
+      value={raw}
+      placeholder={lang !== "fi" && fi ? fi : placeholder}
+      onChange={text => onChange(setTr(value, lang, text))} />
   );
 }
 
@@ -146,6 +160,7 @@ export default function Admin() {
   const [saved, setSaved] = useState("");
   const [status, setStatus] = useState({ t: "", kind: "" });
   const [saving, setSaving] = useState(false);
+  const [ed, setEd] = useState("fi");
 
   useEffect(() => {
     if (!pw) return;
@@ -202,6 +217,17 @@ export default function Admin() {
           <a href="/" target="_blank" rel="noreferrer" style={{ fontSize: 14, color: C.brand, fontWeight: 600, textDecoration: "none" }}>Näytä sivu ↗</a>
           <Btn small onClick={logout}>Kirjaudu ulos</Btn>
         </div>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 16px 10px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, color: C.muted, fontWeight: 600 }}>Muokattava kieli:</span>
+          <div style={{ display: "inline-flex", border: `1px solid ${C.line}`, borderRadius: 999, padding: 2 }}>
+            {LANGS.map(l => (
+              <button key={l.code} type="button" onClick={() => setEd(l.code)} style={{
+                border: "none", borderRadius: 999, padding: "6px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font,
+                background: ed === l.code ? C.brand : "transparent", color: ed === l.code ? "#fff" : C.ink,
+              }}>{l.label}</button>
+            ))}
+          </div>
+        </div>
       </header>
 
       <main style={{ maxWidth: 760, margin: "0 auto", padding: "20px 16px 120px" }}>
@@ -223,27 +249,27 @@ export default function Admin() {
         </Section>
 
         <Section title="Etusivun otsikko">
-          <Field label="Otsikko" multiline value={c.hero.title} onChange={v => updObj("hero", "title", v)} hint="Rivinvaihto tekee otsikkoon uuden rivin." />
-          <Field label="Esittelyteksti" multiline value={c.hero.text} onChange={v => updObj("hero", "text", v)} />
+          <TField lang={ed} label="Otsikko" multiline value={c.hero.title} onChange={v => updObj("hero", "title", v)} hint="Rivinvaihto tekee otsikkoon uuden rivin." />
+          <TField lang={ed} label="Esittelyteksti" multiline value={c.hero.text} onChange={v => updObj("hero", "text", v)} />
         </Section>
 
         <Section title="Ajankohtaista" desc="Nosto etusivulla, esim. tuleva tapahtuma tai tiedote.">
-          <Field label="Pieni otsikko" value={c.news.label} onChange={v => updObj("news", "label", v)} />
-          <Field label="Otsikko" value={c.news.title} onChange={v => updObj("news", "title", v)} />
-          <Field label="Teksti" multiline value={c.news.text} onChange={v => updObj("news", "text", v)} />
+          <TField lang={ed} label="Pieni otsikko" value={c.news.label} onChange={v => updObj("news", "label", v)} />
+          <TField lang={ed} label="Otsikko" value={c.news.title} onChange={v => updObj("news", "title", v)} />
+          <TField lang={ed} label="Teksti" multiline value={c.news.text} onChange={v => updObj("news", "text", v)} />
           <ImageField label="Kuva" value={c.news.image} onChange={v => updObj("news", "image", v)} upload={upload} />
         </Section>
 
         <Section title="Toiminnot" desc="Kokoontumisajat. Liitä video tavallisena YouTube-linkkinä.">
-          <ListEditor items={c.activities} onChange={v => upd("activities", v)} addLabel="Lisää toiminto" titleOf={x => x.title}
+          <ListEditor items={c.activities} onChange={v => upd("activities", v)} addLabel="Lisää toiminto" titleOf={x => tr(x.title, ed)}
             blank={{ day: "", time: "", title: "", desc: "", image: "", video: "" }}
             render={(it, set) => <>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <Field label="Päivä" value={it.day} onChange={v => set({ ...it, day: v })} placeholder="Sunnuntai" />
+                <TField lang={ed} label="Päivä" value={it.day} onChange={v => set({ ...it, day: v })} placeholder="Sunnuntai" />
                 <Field label="Aika" value={it.time} onChange={v => set({ ...it, time: v })} placeholder="10:00–12:00" />
               </div>
-              <Field label="Nimi" value={it.title} onChange={v => set({ ...it, title: v })} />
-              <Field label="Kuvaus" multiline value={it.desc} onChange={v => set({ ...it, desc: v })} />
+              <TField lang={ed} label="Nimi" value={it.title} onChange={v => set({ ...it, title: v })} />
+              <TField lang={ed} label="Kuvaus" multiline value={it.desc} onChange={v => set({ ...it, desc: v })} />
               <ImageField label="Kuva" value={it.image} onChange={v => set({ ...it, image: v })} upload={upload} />
               <Field label="Video (YouTube-linkki)" value={it.video} onChange={v => set({ ...it, video: v })} placeholder="https://www.youtube.com/watch?v=…"
                 hint={it.video ? (toEmbedUrl(it.video) ? "✓ Video löytyi — Katso video -painike näkyy." : "⚠ Linkkiä ei tunnistettu. Käytä YouTube- tai Vimeo-linkkiä.") : "Ilman videota painiketta ei näytetä."} />
@@ -251,37 +277,37 @@ export default function Admin() {
         </Section>
 
         <Section title="Kuvagalleria">
-          <ListEditor items={c.gallery} onChange={v => upd("gallery", v)} addLabel="Lisää kuva" titleOf={x => x.caption}
+          <ListEditor items={c.gallery} onChange={v => upd("gallery", v)} addLabel="Lisää kuva" titleOf={x => tr(x.caption, ed)}
             blank={{ caption: "", image: "" }}
             render={(it, set) => <>
               <ImageField label="Kuva" value={it.image} onChange={v => set({ ...it, image: v })} upload={upload} />
-              <Field label="Kuvateksti" value={it.caption} onChange={v => set({ ...it, caption: v })} />
+              <TField lang={ed} label="Kuvateksti" value={it.caption} onChange={v => set({ ...it, caption: v })} />
             </>} />
         </Section>
 
         <Section title="Tietoa meistä" desc="Kolme korttia etusivun yläosassa.">
           {c.about.map((it, i) => (
             <div key={i} style={{ borderTop: i ? `1px solid ${C.line}` : "none", paddingTop: i ? 14 : 0 }}>
-              <Field label={`Kortti ${i + 1}: pieni otsikko`} value={it.label} onChange={v => upd("about", c.about.map((x, j) => j === i ? { ...x, label: v } : x))} />
-              <Field label="Otsikko" value={it.title} onChange={v => upd("about", c.about.map((x, j) => j === i ? { ...x, title: v } : x))} />
-              <Field label="Teksti" multiline value={it.text} onChange={v => upd("about", c.about.map((x, j) => j === i ? { ...x, text: v } : x))} />
+              <TField lang={ed} label={`Kortti ${i + 1}: pieni otsikko`} value={it.label} onChange={v => upd("about", c.about.map((x, j) => j === i ? { ...x, label: v } : x))} />
+              <TField lang={ed} label="Otsikko" value={it.title} onChange={v => upd("about", c.about.map((x, j) => j === i ? { ...x, title: v } : x))} />
+              <TField lang={ed} label="Teksti" multiline value={it.text} onChange={v => upd("about", c.about.map((x, j) => j === i ? { ...x, text: v } : x))} />
             </div>
           ))}
         </Section>
 
         <Section title="Uskon perusteet">
-          <ListEditor items={c.beliefs} onChange={v => upd("beliefs", v)} addLabel="Lisää kohta" titleOf={x => x.title}
+          <ListEditor items={c.beliefs} onChange={v => upd("beliefs", v)} addLabel="Lisää kohta" titleOf={x => tr(x.title, ed)}
             blank={{ cat: "", title: "", text: "" }}
             render={(it, set) => <>
-              <Field label="Kategoria" value={it.cat} onChange={v => set({ ...it, cat: v })} placeholder="OPETUS" />
-              <Field label="Otsikko" value={it.title} onChange={v => set({ ...it, title: v })} />
-              <Field label="Teksti" multiline value={it.text} onChange={v => set({ ...it, text: v })} />
+              <TField lang={ed} label="Kategoria" value={it.cat} onChange={v => set({ ...it, cat: v })} placeholder="OPETUS" />
+              <TField lang={ed} label="Otsikko" value={it.title} onChange={v => set({ ...it, title: v })} />
+              <TField lang={ed} label="Teksti" multiline value={it.text} onChange={v => set({ ...it, text: v })} />
             </>} />
         </Section>
 
         <Section title="Raamatunjae">
-          <Field label="Jae" multiline value={c.verse.text} onChange={v => updObj("verse", "text", v)} />
-          <Field label="Viite" value={c.verse.ref} onChange={v => updObj("verse", "ref", v)} placeholder="Johannes 3:16" />
+          <TField lang={ed} label="Jae" multiline value={c.verse.text} onChange={v => updObj("verse", "text", v)} />
+          <TField lang={ed} label="Viite" value={c.verse.ref} onChange={v => updObj("verse", "ref", v)} placeholder="Johannes 3:16" />
         </Section>
 
         <Section title="Yhteystiedot">
