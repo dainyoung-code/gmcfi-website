@@ -13,14 +13,14 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
   if (req.method === "GET") {
-    if (!hasBlob()) return res.status(200).json({ content: null });
+    if (!hasBlob()) return res.status(200).json({ content: null, storage: false });
     try {
       const blobs = await latest();
-      if (!blobs.length) return res.status(200).json({ content: null });
+      if (!blobs.length) return res.status(200).json({ content: null, storage: true });
       const r = await fetch(blobs[0].url, { cache: "no-store" });
-      return res.status(200).json({ content: await r.json(), updatedAt: blobs[0].uploadedAt });
+      return res.status(200).json({ content: await r.json(), updatedAt: blobs[0].uploadedAt, storage: true });
     } catch (e) {
-      return res.status(200).json({ content: null, error: String(e.message || e) });
+      return res.status(200).json({ content: null, storage: true, error: String(e.message || e) });
     }
   }
 
