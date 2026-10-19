@@ -26,9 +26,11 @@ export function checkPassword(req) {
 export function blobToken() {
   if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
   const k = Object.keys(process.env).find(k => /READ_WRITE_TOKEN$/.test(k) && String(process.env[k]).startsWith("vercel_blob_"));
-  return k ? process.env[k] : "";
+  return k ? process.env[k] : undefined;
 }
 
+// Uudet Vercel-tallennustilat käyttävät OIDC-kirjautumista: silloin tokenia ei ole,
+// vaan BLOB_STORE_ID, ja @vercel/blob hakee kirjautumisen automaattisesti.
 export function hasBlob() {
-  return Boolean(blobToken());
+  return Boolean(blobToken() || process.env.BLOB_STORE_ID);
 }
