@@ -1,5 +1,5 @@
 import { put } from "@vercel/blob";
-import { checkPassword, hasBlob } from "./_auth.js";
+import { checkPassword, hasBlob, blobToken } from "./_auth.js";
 
 export const config = { api: { bodyParser: { sizeLimit: "4mb" } } };
 
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   if (buf.length > 3_000_000) return res.status(413).json({ error: "Kuva on liian suuri" });
 
   const blob = await put(`images/kuva.${TYPES[m[1]]}`, buf, {
-    access: "public", contentType: m[1], addRandomSuffix: true,
+    access: "public", contentType: m[1], addRandomSuffix: true, token: blobToken(),
   });
   return res.status(200).json({ url: blob.url });
 }

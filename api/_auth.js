@@ -21,6 +21,14 @@ export function checkPassword(req) {
   return { ok: true };
 }
 
+// Vercel nimeää tokenin oletuksena BLOB_READ_WRITE_TOKEN, mutta yhdistettäessä
+// voi valita oman etuliitteen (esim. GMCFI_BLOB_READ_WRITE_TOKEN).
+export function blobToken() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return process.env.BLOB_READ_WRITE_TOKEN;
+  const k = Object.keys(process.env).find(k => /READ_WRITE_TOKEN$/.test(k) && String(process.env[k]).startsWith("vercel_blob_"));
+  return k ? process.env[k] : "";
+}
+
 export function hasBlob() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(blobToken());
 }

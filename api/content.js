@@ -1,10 +1,10 @@
 import { put, list, del } from "@vercel/blob";
-import { checkPassword, hasBlob } from "./_auth.js";
+import { checkPassword, hasBlob, blobToken } from "./_auth.js";
 
 const PREFIX = "content/site-";
 
 async function latest() {
-  const { blobs } = await list({ prefix: PREFIX, limit: 1000 });
+  const { blobs } = await list({ prefix: PREFIX, limit: 1000, token: blobToken() });
   blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
   return blobs;
 }
@@ -37,14 +37,14 @@ export default async function handler(req, res) {
     if (json.length > 500_000) return res.status(413).json({ error: "Sisältö on liian suuri" });
 
     const saved = await put(`${PREFIX}${Date.now()}.json`, json, {
-      access: "public", contentType: "application/json", addRandomSuffix: true,
+      access: "public", contentType: "application/json", addRandomSuffix: true, token: blobToken(),
     });
 
     // Pidä 10 uusinta versiota varmuuskopioina, poista vanhemmat.
     try {
       const blobs = await latest();
       const old = blobs.slice(10).map(b => b.url);
-      if (old.length) await del(old);
+      if (old.length) await del(old, { token: blobToken() });
     } catch { /* ei kriittinen */ }
 
     return res.status(200).json({ ok: true, url: saved.url });
